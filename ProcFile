@@ -1,0 +1,1 @@
+web: gunicorn bot_2:app --log-file -
