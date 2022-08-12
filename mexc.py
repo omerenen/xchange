@@ -17,7 +17,6 @@ class MEXCCLIENT():
         self.access_key = access_key
         self.secret_key = secret_key
         self.api_base = api_base
-        self.buysell_pause=False
 
         self.ticker_workers = []
         self.ticker_workers_controller_thread = threading.Thread(target=self.ticker_workers_controller,daemon=True)
@@ -98,14 +97,9 @@ class MEXCCLIENT():
 
             for aveliable_worker in aveliable_workers:
                 if time.time()  > self.latest_worker_start_time + 1/13:
-                    if self.buysell_pause:
-                        time.sleep(0.01)
-                        continue
-
                     t1 = time.time()
                     hz = 1/(t1-t0)
                     t0 = t1
-
                     
                     self.latest_worker_start_time = time.time()
                     follower_worker = self.find_worker_with_id(self.lastest_worker_id)
@@ -190,6 +184,14 @@ class MEXCCLIENT():
         for i in range(0,len(self.all_tickers_data[-1]['data'])):
             if self.all_tickers_data[-1]['data'][i]['symbol'] == f"{symbol}_USDT":
                 return self.all_tickers_data[-1]['data'][i]
+
+    def buy_sell_imidiate(self,symbol,found,sleep = 0.0):
+        t0 = time.time()
+        buy_resp = self.buy(symbol,found)
+        time.sleep(sleep)
+        sell_resp = self.sell(symbol,float(buy_resp["bid_quantity"]))
+        resp = {"buy_resp":buy_resp,"sell_resp":sell_resp,"delta":time.time()-t0}
+        return resp
     
     def __del__(self):
         if self.session:

@@ -11,8 +11,8 @@ import time
 #-------------------------------
 
 
-access_key = "mx0wV7gCa1pIVFw8yv"
-secret_key = "ca93136ba13444a2b58e4f6bf5065c51"
+access_key = "mx0UnHXPg1SSmAl5Aq"
+secret_key = "a100ee1055fa46bbba879fad92ea7c79"
 
 baseURL = "https://www.mexc.com"
 mexc = MEXCCLIENT(access_key=access_key,
@@ -83,15 +83,8 @@ def target_finder(splitted_message):
             break
     if(target_coin !=""):
         print(target_coin)
-        t0 = time.time()
-        result_buy = mexc.buy(target_coin, 10.1)
-        print("test")
-        resp_buy = result_buy["bid_quantity"]
-        sleep(10)
-        result_sell = mexc.sell(target_coin, resp_buy)
-        print("delta---->", time.time()-t0)
-        print(result_buy)
-        print(result_sell)
+        resp = mexc.buy_sell_imidiate(symbol=target_coin,found=15,sleep=0) #omer bunu kullan daha sexy
+        print(resp)
 
 
 
