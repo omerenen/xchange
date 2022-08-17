@@ -2,7 +2,6 @@ from cgi import print_form
 import hmac
 from importlib.resources import path
 import json
-from socket import timeout
 import time
 from datetime import datetime
 import pytz
@@ -11,8 +10,6 @@ from requests import Session
 import threading
 from pathlib import Path
 from flask import jsonify
-
-from .main import sell
 
 class MEXCCLIENT():
     def __init__(self, access_key="",  secret_key="", api_base="", **kwargs):
@@ -196,9 +193,10 @@ class MEXCCLIENT():
         resp = {"buy_resp":buy_resp,"sell_resp":sell_resp,"delta":time.time()-t0}
         return resp
 
-    def buy_sell_persent(self,symbol,found,persentage = 1.0,timout=30):
+    def buy_sell_persent(self,symbol,found,persentage = 1.0,timeout=30):
         t0 = time.time()
         buy_resp = self.buy(symbol,found)
+        print(buy_resp)
         buy_price = buy_resp['offer_bid']
         target_sell_price = buy_price * persentage
         t1=time.time()
@@ -207,10 +205,13 @@ class MEXCCLIENT():
             last_max_bid = float(ticker_data['bid'])
             if last_max_bid * 0.999 > target_sell_price:
                 sell_resp = self.sell(symbol,float(buy_resp["bid_quantity"]))
-                resp = {"buy_resp":buy_resp,"sell_resp":sell_resp,"delta":time.time()-t0}
+                print(sell_resp)
+                resp = {"buy_resp":buy_resp,"sell_resp":sell_resp,"delta":time.time()-t0,"timeout":"false"}
+
                 return resp
         sell_resp = self.sell(symbol,float(buy_resp["bid_quantity"]))
-        resp = {"buy_resp":buy_resp,"sell_resp":sell_resp,"delta":time.time()-t0}
+        print(sell_resp)
+        resp = {"buy_resp":buy_resp,"sell_resp":sell_resp,"delta":time.time()-t0,"timeout":"yes"}
         
         
     
@@ -293,3 +294,17 @@ def log_data(path,data):
         log_y = str(data)
         line = "{}\n".format(log_y)
         f.write(line)
+
+
+access_key = "mx0wV7gCa1pIVFw8yv"
+secret_key = "ca93136ba13444a2b58e4f6bf5065c51"
+
+baseURL = "https://www.mexc.com"
+mexc = MEXCCLIENT(access_key=access_key,
+                  secret_key=secret_key, api_base=baseURL)
+
+mexc.start_ticker_workers(15)
+time.sleep(5)
+resp = mexc.buy_sell_persent("BTC",15,1.15,5)
+print(resp)
+        

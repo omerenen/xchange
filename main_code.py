@@ -18,12 +18,8 @@ baseURL = "https://www.mexc.com"
 mexc = MEXCCLIENT(access_key=access_key,
                   secret_key=secret_key, api_base=baseURL)
 
-mexc.log_sync_ticker = True
-mexc.log_worker_ticks = True
-
-# 10.99291214
-
 mexc.start_ticker_workers(15)
+time.sleep(15)
 
 api_id = 18960937
 api_hash = "3501490d2f8009f8c3de0d2dc322b80c"
@@ -83,8 +79,11 @@ def target_finder(splitted_message):
             break
     if(target_coin !=""):
         print(target_coin)
-        resp = mexc.buy_sell_imidiate(symbol=target_coin,found=15,sleep=0) #omer bunu kullan daha sexy
+        t0 = time.time()
+        resp = mexc.buy_sell_persent(target_coin,25,1.20,40)
+        print("delta---->", time.time()-t0)
         print(resp)
+        
 
 
 
