@@ -2,6 +2,7 @@ from cgi import print_form
 import hmac
 from importlib.resources import path
 import json
+from socket import timeout
 import time
 from datetime import datetime
 import pytz
@@ -10,6 +11,8 @@ from requests import Session
 import threading
 from pathlib import Path
 from flask import jsonify
+
+from .main import sell
 
 class MEXCCLIENT():
     def __init__(self, access_key="",  secret_key="", api_base="", **kwargs):
@@ -192,6 +195,24 @@ class MEXCCLIENT():
         sell_resp = self.sell(symbol,float(buy_resp["bid_quantity"]))
         resp = {"buy_resp":buy_resp,"sell_resp":sell_resp,"delta":time.time()-t0}
         return resp
+
+    def buy_sell_persent(self,symbol,found,persentage = 1.0,timout=30):
+        t0 = time.time()
+        buy_resp = self.buy(symbol,found)
+        buy_price = buy_resp['offer_bid']
+        target_sell_price = buy_price * persentage
+        t1=time.time()
+        while time.time() - t1 < timeout:
+            ticker_data = self.get_ticker_with_symbol(symbol)
+            last_max_bid = float(ticker_data['bid'])
+            if last_max_bid * 0.999 > target_sell_price:
+                sell_resp = self.sell(symbol,float(buy_resp["bid_quantity"]))
+                resp = {"buy_resp":buy_resp,"sell_resp":sell_resp,"delta":time.time()-t0}
+                return resp
+        sell_resp = self.sell(symbol,float(buy_resp["bid_quantity"]))
+        resp = {"buy_resp":buy_resp,"sell_resp":sell_resp,"delta":time.time()-t0}
+        
+        
     
     def __del__(self):
         if self.session:
